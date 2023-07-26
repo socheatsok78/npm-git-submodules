@@ -1,6 +1,7 @@
 import 'zx/globals'
 import fs from 'fs-extra';
 import minimist from 'minimist';
+import process from 'process';
 
 const vargv = minimist(process.argv.slice(2), {
   string: ['depth'],
@@ -28,6 +29,11 @@ const state = {
 }
 
 async function run() {
+  if (process.env.CI || process.env.GITHUB_ACTIONS) {
+    console.log("Running in CI mode!")
+    return
+  }
+
   if (vargv["dry-run"]) {
     console.log("!!! Running in dry-run mode !!!")
   }
