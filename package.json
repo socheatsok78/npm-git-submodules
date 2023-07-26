@@ -1,10 +1,10 @@
 {
   "name": "npm-git-submodules",
   "description": "A NPM hook for fetching git submodules",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.mjs",
   "bin": {
-    "git-submodules": "dist/index.mjs"
+    "git-submodules": "cli.mjs"
   },
   "files": [
     "dist"
