@@ -15,11 +15,11 @@ async function group(name, cb = async () => {}) {
   console.groupEnd()
 }
 
-async function task(command = "") {
+async function task(commands = []) {
   if (!vargv["dry-run"]) {
-    await $`${command}`
+    await $`${commands}`
   } else {
-    console.log(`$ ${command}`)
+    console.log(`$ ${commands}`)
   }
 }
 
@@ -61,9 +61,9 @@ async function run() {
       if (argv["dry-run"]) {
         console.log("No operation performed!")
       } else if (state.gitmodules === "FOUND") {
-        await task("git submodule sync --recursive")
-        await task("git -c protocol.version=2 submodule update --init --force --depth=1 --recursive")
-        await task("git submodule foreach --recursive git config --local gc.auto 0")
+        await task(["git", "submodule", "sync", "--recursive"])
+        await task(["git", "-c", "protocol.version=2", "submodule", "update", "--init", "--force", "--depth=1", "--recursive"])
+        await task(["git", "submodule", "foreach", "--recursive", "git config --local gc.auto 0"])
       } else {
         console.log("[Skipped]")
       }
