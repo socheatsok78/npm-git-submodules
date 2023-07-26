@@ -41,7 +41,7 @@ const state = {
 
 async function run() {
   if (vargv["check-ci"]){
-    if (process.env.CI || process.env.GITHUB_ACTIONS) {
+    if (process.env.CI) {
       console.log("[Skipped] Running in CI mode!")
       return
     }
