@@ -5,7 +5,7 @@ import process from 'process';
 
 const vargv = minimist(process.argv.slice(2), {
   string: ['depth'],
-  boolean: ['continue-on-error', 'dry-run', 'version', 'help', 'quiet'],
+  boolean: ['check-ci', 'continue-on-error', 'dry-run', 'version', 'help', 'quiet'],
   alias: { v: 'version', h: 'help' },
   stopEarly: true,
 });
@@ -29,9 +29,11 @@ const state = {
 }
 
 async function run() {
-  if (process.env.CI || process.env.GITHUB_ACTIONS) {
-    console.log("Running in CI mode!")
-    return
+  if (vargv["check-ci"]){
+    if (process.env.CI || process.env.GITHUB_ACTIONS) {
+      console.log("[Skipped] Running in CI mode!")
+      return
+    }
   }
 
   if (vargv["dry-run"]) {
