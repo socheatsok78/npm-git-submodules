@@ -5,10 +5,21 @@ import process from 'process';
 
 const vargv = minimist(process.argv.slice(2), {
   string: ['depth'],
-  boolean: ['check-ci', 'continue-on-error', 'dry-run', 'version', 'help', 'quiet'],
-  alias: { v: 'version', h: 'help' },
+  boolean: ['check-ci', 'continue-on-error', 'dry-run', 'help'],
   stopEarly: true,
 });
+
+function help(){
+  console.log(`
+  Usage: git-submodule-update [options]
+
+  Options:
+    --check-ci          Check if running in CI environment
+    --continue-on-error Continue on error
+    --dry-run           Dry run
+    --help              Show help
+  `)
+}
 
 async function group(name, cb = async () => {}) {
   console.group(name)
@@ -83,4 +94,8 @@ async function run() {
   }
 }
 
-run()
+if (vargv["help"]) {
+  help()
+} else{
+  run()
+}
