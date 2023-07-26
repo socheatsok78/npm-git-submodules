@@ -33,24 +33,25 @@ async function run() {
   }
 
   try {
-    await group("Checking for submodules...", async () => {
-      if (!argv["dry-run"]) {
-        const exists = fs.existsSync(".gitmodules")
-        if (!exists) {
-          if (argv["continue-on-error"]) {
-            state.gitmodules = "NOT_FOUND"
-            console.error("No .gitmodules file found")
-            return
-          }
-          throw new Error("No .gitmodules file found")
+    if (!argv["dry-run"]) {
+      const exists = fs.existsSync(".gitmodules")
+
+      if (!exists) {
+        if (argv["continue-on-error"]) {
+          state.gitmodules = "NOT_FOUND"
+          console.error("No .gitmodules file found (continuing)")
+          return
         } else {
-          state.gitmodules = "FOUND"
-          console.log("Found .gitmodules file")
+          throw new Error("No .gitmodules file found")
         }
       } else {
-        console.log("No operation performed!")
+        state.gitmodules = "FOUND"
+        console.log("Found .gitmodules file")
       }
-    })
+    } else {
+      console.log("No operation performed!")
+      return
+    }
 
     if (argv["continue-on-error"] && state.gitmodules === "NOT_FOUND") {
       console.log("No operation performed!")
