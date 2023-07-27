@@ -7,13 +7,17 @@ const BLOCKLIST = {
   "ForkProcessId": "Fork" // https://git-fork.com
 }
 
+// Main
 const argv = minimist(process.argv.slice(2), {
   string: ['depth'],
   boolean: ['force', 'continue-on-error', 'dry-run', 'help'],
   stopEarly: true,
 });
 
-function help(){
+if (argv["help"]) { help() } else { run() }
+
+// Functions
+function help() {
   console.log(`
   Usage: git-submodule-update [options]
 
@@ -24,20 +28,6 @@ function help(){
     --dry-run           Dry run
     --help              Show help
   `)
-}
-
-async function group(name, cb = async () => {}) {
-  console.group(name)
-  await cb()
-  console.groupEnd()
-}
-
-async function task(commands = []) {
-  if (!argv["dry-run"]) {
-    await $`${commands}`
-  } else {
-    console.log(`$ ${commands}`)
-  }
 }
 
 async function run() {
@@ -90,8 +80,16 @@ async function run() {
   }
 }
 
-if (argv["help"]) {
-  help()
-} else{
-  run()
+async function group(name, cb = async () => { }) {
+  console.group(name)
+  await cb()
+  console.groupEnd()
+}
+
+async function task(commands = []) {
+  if (!argv["dry-run"]) {
+    await $`${commands}`
+  } else {
+    console.log(`$ ${commands}`)
+  }
 }
