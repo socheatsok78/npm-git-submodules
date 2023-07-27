@@ -36,14 +36,16 @@ async function run() {
     if (!argv["force"]) {
       // Skip if running in CI mode
       if (process.env.CI) {
-        throw new Error("Running in CI mode!")
+        console.warn("Running in CI mode!")
+        return
       }
 
       // Skip if running in an environment that is already configured to fetch submodules
       // To avoid duplicate fetches
       for (const key in process.env) {
         if (key in BLOCKLIST) {
-          throw new Error(`Running in "${BLOCKLIST[key]}" environment!`)
+          console.warn(`Running in "${BLOCKLIST[key]}" environment!`)
+          return
         }
       }
     }
