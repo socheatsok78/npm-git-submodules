@@ -14,8 +14,9 @@ Here an example of using `git-submodules` hook in `package.json`:
 ```json
 {
   "scripts": {
-    "git-submodules": "git-submodules",
-    "prepare": "git-submodules"
+    "prepare": "git-submodules",
+    // or
+    "postinstall": "git-submodules"
   }
 }
 ```
@@ -25,8 +26,7 @@ Or using with `gitHooks`:
 ```json
 {
   "gitHooks": {
-    "post-merge": "git-submodules --check-ci",
-    "post-checkout": "git-submodules --check-ci"
+    "post-checkout": "git-submodules --continue-on-error"
   }
 }
 ```
