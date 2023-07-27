@@ -3,6 +3,10 @@ import minimist from 'minimist';
 import process from 'process';
 import { $ } from 'zx'
 
+const BLOCKLIST = {
+  "ForkProcessId": "Fork" // https://git-fork.com
+}
+
 const argv = minimist(process.argv.slice(2), {
   string: ['depth'],
   boolean: ['force', 'continue-on-error', 'dry-run', 'help'],
@@ -37,12 +41,20 @@ async function task(commands = []) {
 }
 
 async function run() {
-  if (process.env.CI) {
-    console.log("[Skipped] Running in CI mode!")
-    return
-  }
-
   try {
+    // Skip if running in CI mode
+    if (process.env.CI) {
+      throw new Error("Running in CI mode!")
+    }
+
+    // Skip if running in an environment that is already configured to fetch submodules
+    // To avoid duplicate fetches
+    for (const key in process.env) {
+      if (key in BLOCKLIST) {
+        throw new Error(`Running in "${BLOCKLIST[key]}" environment!`)
+      }
+    }
+
     const exists = fs.existsSync(".gitmodules")
 
     if (!exists) {
@@ -68,11 +80,11 @@ async function run() {
       })
     }
   } catch (error) {
-    console.error(error.message || error)
-
     if (argv["continue-on-error"]) {
+      console.error("[SKIPPED]", error.message || error)
       process.exit(0)
     } else {
+      console.error(error.message || error)
       process.exit(1)
     }
   }
