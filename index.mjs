@@ -36,7 +36,7 @@ async function run() {
     if (!argv["force"]) {
       // Skip if running in CI mode
       if (process.env.CI) {
-        console.warn("Running in CI mode!")
+        console.warn("[IGNORE] Running in CI mode!")
         return
       }
 
@@ -44,7 +44,7 @@ async function run() {
       // To avoid duplicate fetches
       for (const key in process.env) {
         if (key in BLOCKLIST) {
-          console.warn(`Running in "${BLOCKLIST[key]}" environment!`)
+          console.warn(`[IGNORE] Running in "${BLOCKLIST[key]}" environment!`)
           return
         }
       }
