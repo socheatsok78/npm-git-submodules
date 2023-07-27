@@ -1,11 +1,11 @@
-import 'zx/globals'
 import fs from 'fs-extra';
 import minimist from 'minimist';
 import process from 'process';
+import { $ } from 'zx'
 
-const vargv = minimist(process.argv.slice(2), {
+const argv = minimist(process.argv.slice(2), {
   string: ['depth'],
-  boolean: ['check-ci', 'continue-on-error', 'dry-run', 'help'],
+  boolean: ['force', 'continue-on-error', 'dry-run', 'help'],
   stopEarly: true,
 });
 
@@ -14,7 +14,8 @@ function help(){
   Usage: git-submodule-update [options]
 
   Options:
-    --check-ci          Check if running in CI environment
+    --force             Force update
+    --depth             Set depth
     --continue-on-error Continue on error
     --dry-run           Dry run
     --help              Show help
@@ -28,73 +29,56 @@ async function group(name, cb = async () => {}) {
 }
 
 async function task(commands = []) {
-  if (!vargv["dry-run"]) {
+  if (!argv["dry-run"]) {
     await $`${commands}`
   } else {
     console.log(`$ ${commands}`)
   }
 }
 
-const state = {
-  gitmodules: "UNKNOWN",
-}
-
 async function run() {
-  if (vargv["check-ci"]){
-    if (process.env.CI) {
-      console.log("[Skipped] Running in CI mode!")
-      return
-    }
-  }
-
-  if (vargv["dry-run"]) {
-    console.log("!!! Running in dry-run mode !!!")
+  if (process.env.CI) {
+    console.log("[Skipped] Running in CI mode!")
+    return
   }
 
   try {
-    if (!argv["dry-run"]) {
-      const exists = fs.existsSync(".gitmodules")
+    const exists = fs.existsSync(".gitmodules")
 
-      if (!exists) {
-        if (argv["continue-on-error"]) {
-          state.gitmodules = "NOT_FOUND"
-          console.error("No .gitmodules file found (continuing)")
-          return
-        } else {
-          throw new Error("No .gitmodules file found")
-        }
-      } else {
-        state.gitmodules = "FOUND"
-        console.log("Found .gitmodules file")
-      }
+    if (!exists) {
+      throw new Error("No .gitmodules file found!")
     } else {
-      console.log("No operation performed!")
-      return
-    }
+      console.log("Found .gitmodules file!")
 
-    if (argv["continue-on-error"] && state.gitmodules === "NOT_FOUND") {
-      console.log("No operation performed!")
-      return
-    }
-    
-    await group("Fetching submodules...", async () => {
-      if (argv["dry-run"]) {
-        console.log("No operation performed!")
-      } else if (state.gitmodules === "FOUND") {
-        await task(["git", "submodule", "sync", "--recursive"])
-        await task(["git", "-c", "protocol.version=2", "submodule", "update", "--init", "--force", "--depth=1", "--recursive"])
-        await task(["git", "submodule", "foreach", "--recursive", "git config --local gc.auto 0"])
-      } else {
-        console.log("[Skipped]")
+      const extraArgs = []
+
+      if (argv["force"]) {
+        extraArgs.push("--force")
       }
-    })
+
+      if (argv["depth"]) {
+        extraArgs.push("--depth")
+        extraArgs.push(argv["depth"])
+      }
+
+      await group("Fetching submodules", async () => {
+        await task(["git", "submodule", "sync", "--recursive"])
+        await task(["git", "-c", "protocol.version=2", "submodule", "update", "--init", "--recursive", ...extraArgs])
+        await task(["git", "submodule", "foreach", "--recursive", "git config --local gc.auto 0"])
+      })
+    }
   } catch (error) {
-    console.error(error.msg || error.message || error)
-    process.exit(1)
+    console.error(error.message || error)
+
+    if (argv["continue-on-error"]) {
+      process.exit(0)
+    } else {
+      process.exit(1)
+    }
   }
 }
 
-if (vargv["help"]) {
+if (argv["help"]) {
   help()
 } else{
   run()
