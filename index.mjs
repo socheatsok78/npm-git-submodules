@@ -22,29 +22,33 @@ function help() {
   Usage: git-submodule-update [options]
 
   Options:
-    --force             Force update
-    --depth             Set depth
-    --continue-on-error Continue on error
-    --dry-run           Dry run
-    --help              Show help
+    --force             Skip all checks and force update
+    --depth             Set submodule pull depth
+    --continue-on-error
+    --dry-run
+    --help
   `)
 }
 
 async function run() {
   try {
-    // Skip if running in CI mode
-    if (process.env.CI) {
-      throw new Error("Running in CI mode!")
-    }
+    // Skip all checks if --force is passed
+    if (!argv["force"]) {
+      // Skip if running in CI mode
+      if (process.env.CI) {
+        throw new Error("Running in CI mode!")
+      }
 
-    // Skip if running in an environment that is already configured to fetch submodules
-    // To avoid duplicate fetches
-    for (const key in process.env) {
-      if (key in BLOCKLIST) {
-        throw new Error(`Running in "${BLOCKLIST[key]}" environment!`)
+      // Skip if running in an environment that is already configured to fetch submodules
+      // To avoid duplicate fetches
+      for (const key in process.env) {
+        if (key in BLOCKLIST) {
+          throw new Error(`Running in "${BLOCKLIST[key]}" environment!`)
+        }
       }
     }
 
+    // Check if .gitmodules file exists
     const exists = fs.existsSync(".gitmodules")
 
     if (!exists) {
