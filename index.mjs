@@ -19,7 +19,7 @@ if (argv["help"]) { help() } else { run() }
 // Functions
 function help() {
   console.log(`
-  Usage: git-submodule-update [options]
+  Usage: git-submodules [options]
 
   Options:
     --force             Skip all checks and force update
